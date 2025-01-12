@@ -1,0 +1,52 @@
+services:
+  client:
+    build:
+        context: ./client
+    ports:
+        - '80:80'
+    networks:
+        - client_network
+    depends_on:
+        - server
+    volumes:
+        - ./client:/var/www/html
+
+  server:
+    build:
+        context: ./server
+    networks:
+        - client_network
+        - app_network
+    depends_on:
+        - db
+    volumes:
+        - ./server:/app
+
+  db:
+    image: mysql:8.0
+    environment:
+        MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${DB_NAME}
+        MYSQL_USER: ${DB_USER}
+        MYSQL_PASSWORD: ${DB_PASSWORD}
+    networks:
+        - app_network
+    volumes:
+        - db_data:/var/lib/mysql
+    healthcheck:
+        test:
+            [
+                'CMD-SHELL',
+                'mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD || exit 1',
+            ]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+        start_period: 10s
+
+volumes:
+    db_data:
+
+networks:
+  client_network:
+  app_network:

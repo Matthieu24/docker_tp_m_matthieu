@@ -1,0 +1,40 @@
+services:
+  server:
+    build:
+      context: ./server
+      target: dev
+    volumes:
+      - ./server:/app
+    ports:
+      - '8080:80'
+    env_file:
+      - .env.dev
+    # environment:
+    #   - DB_SERVER=${DB_SERVER}
+    #   - DB_USER=${DB_USER}
+    #   - DB_PASSWORD=${DB_PASSWORD}
+    #   - DB_NAME=${DB_NAME}
+
+  admin:
+    image: phpmyadmin/phpmyadmin
+    env_file:
+      - .env.dev
+    networks:
+      - app_network
+      - client_network
+    # environment:
+    #   - PMA_HOST=${PMA_SERVER}
+    #   - PMA_USER=${PMA_USER}
+    #   - PMA_PASSWORD=${PMA_PASSWORD}
+    ports:
+      - '8081:80'
+    depends_on:
+      - db
+
+  mailcatcher:
+    image: mailhog/mailhog
+    ports:
+      - '1025:1025'
+      - '8025:8025'
+    networks:
+      - app_network
